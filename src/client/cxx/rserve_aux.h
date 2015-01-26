@@ -27,11 +27,19 @@
 
 #include <vector>
 #include <string>
+#include <exception>
 #include <boost/format.hpp>
 #include "Rconnection.h"
 using namespace std;
 
 Rexp *parse_rexp(std::string data);
+
+struct RserveAuxException : public std::exception {
+   std::string s;
+   RserveAuxException(std::string ss) : s(ss) {}
+   virtual ~RserveAuxException() throw() {}
+   virtual const char* what() const throw() { return s.c_str(); }
+};
 
 class DataFrame {
     // Wrapper around R's data frames as Rexps, to make handling them easier

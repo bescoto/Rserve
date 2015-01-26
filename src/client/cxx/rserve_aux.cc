@@ -22,7 +22,6 @@
  *  $Id: Rconnection.cc 301 2011-01-07 16:32:45Z urbanek $
  */
 
-#include "exception.h"
 #include "rserve_aux.h"
 #include "Rconnection.h"
 
@@ -105,7 +104,7 @@ void DataFrame::df_const_helper(const vector<string> &colnames,
 				bool set_own_rv) {
     // Helper function, make data frames with and without rownames
     if (colnames.size() != coldata.size())
-	throw ExcelsirException("DataFrame names and data different lengths");
+	throw RserveAuxException("DataFrame names and data different lengths");
 
     int nrow = colnames.size() > 0 ? get_len(coldata[0]) : 0;
     // Set class variable
@@ -152,7 +151,7 @@ Rexp *DataFrame::get_rownames(int nrow, const Rstrings *rownames) const {
 	}
 
 	if (rownames->count() != nrow)
-		throw ExcelsirException("Wrong length of rownames");
+		throw RserveAuxException("Wrong length of rownames");
 	return (Rexp *)rownames;
 }
 
@@ -164,7 +163,7 @@ unsigned long DataFrame::get_len(const Rexp *x) const {
 		return ((Rinteger *)x)->length();
 	else if (x->type == XT_ARRAY_DOUBLE)
 		return ((Rdouble *)x)->length();
-	throw ExcelsirException(str(boost::format(
+	throw RserveAuxException(str(boost::format(
 		"Unrecognized type %d in data frame") % x->type));
 }
 
@@ -186,10 +185,10 @@ const Rstrings *DataFrame::get_rownames() const {
     // Return the rownames from the data frame, assuming strings
     Rexp *rn = ((Rlist *)rv->attr)->entryByTagName("row.names");
     if (rn->type != XT_ARRAY_STR)
-	throw ExcelsirException("Data frame does not have string rownames");
+	throw RserveAuxException("Data frame does not have string rownames");
     Rstrings *rs = (Rstrings *)rn;
     if (rs->count() != this->nrow())
-	throw ExcelsirException("Data frame rownames don't match length");
+	throw RserveAuxException("Data frame rownames don't match length");
     return rs;
 }
 
@@ -198,11 +197,11 @@ const Rstrings *DataFrame::get_rownames() const {
 vector<string> Factor2Strings(const Rinteger *ri) {
     // Return a vector of strings from an R factor
     if (!ri || ri->type != XT_ARRAY_INT)
-	throw ExcelsirException("Received factor with bad format");
+	throw RserveAuxException("Received factor with bad format");
     Rstrings *levels = (Rstrings *)(((Rlist*)ri->attr)
 				    ->entryByTagName("levels"));
     if (!levels || levels->type != XT_ARRAY_STR)
-	throw ExcelsirException("Factor is missing string levels");
+	throw RserveAuxException("Factor is missing string levels");
 
 	vector<string> result;
     int curval, curindex, max_possible_index = levels->count() - 1;
@@ -213,7 +212,7 @@ vector<string> Factor2Strings(const Rinteger *ri) {
 		else {
 			curindex = curval - 1; // R starts counting at 1
 			if (curindex < 0 || curindex > max_possible_index)
-				throw ExcelsirException("Factor has missing level");
+				throw RserveAuxException("Factor has missing level");
 			result.push_back(levels->stringAt(curindex));
 		}
 	}
